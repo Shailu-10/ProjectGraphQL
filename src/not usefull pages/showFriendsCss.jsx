@@ -50,7 +50,10 @@ function ShowFriends({ friends }) {
           ))
         )
       ) : (
-        <p>Friends data is undefined.</p>
+        <>
+          <p>Friends data is undefined.</p>
+          <div>Send Friends Requests!!</div>
+        </>
       )}
     </div>
   );
