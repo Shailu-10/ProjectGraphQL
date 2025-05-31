@@ -38,10 +38,14 @@ export default function LoginPage() {
       [identifier]: value,
     }));
   }
+  //adding somethingn in frontedn
+  //adding Login page;
+  const newFrontend = 5;
+
   async function handleSubmit(event) {
     event.preventDefault();
 
-    console.log("logging");
+    //removing previous
     console.log(enteredValues);
     enteredValues.username = enteredValues.username.trim();
     enteredValues.password = enteredValues.password.trim();
