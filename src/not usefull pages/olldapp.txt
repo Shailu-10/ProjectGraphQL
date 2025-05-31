@@ -1,0 +1,465 @@
+import React, { useState, useEffect } from "react";
+import UserDetails from "./UserDetails.jsx";
+import ShowFriends from "./showFriends.jsx";
+let userDetailObj;
+
+let currButtonSelected = "";
+//when error is thrown from backend, we get query value as null...means, result.data.userDetail will be null if not null so, then we have got value..means,
+//and new error fiel with data comes means, we can access result.data like this..
+// Component to display individual friend with buttons
+//friend is basically a userobject userSchema m jo user h, databasem save ho rha h woh h friend
+const FriendCard = ({
+  friend,
+  onAddFriend,
+  onDeleteFriend,
+  onShowMutualFriends,
+  onShowFriends,
+  onShowDetails,
+}) => {
+  return (
+    <div className="friend-card">
+      <h3>{friend.name}</h3>
+      <button onClick={() => onShowFriends(friend._id)}>Show Friends</button>
+      <button onClick={() => onShowMutualFriends(friend._id)}>
+        Show Mutual Friends
+      </button>
+      <button onClick={() => onShowDetails(friend._id)}>User Details</button>
+      <button onClick={() => onAddFriend(friend._id)}>Add Friend</button>
+      <button onClick={() => onDeleteFriend(friend._id)}>Delete Friend</button>
+    </div>
+  );
+};
+
+const App = () => {
+  const [arrayObj, setArrayObj] = useState([]);
+  const [friends, setFriends] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedUser, setSelectedUser] = useState(null); // Store selected user
+  // const [activeAction, setActiveAction] = useState("");
+
+  // Fetch friends from the backend
+  //MOST IMPORTANT FUNCTION:
+  // we can handle errro
+  ///...
+  ///...
+  ///...check result.error
+  //result.data hota h, if we returned some data means query success
+  //but, inbetweeen agar, koi error throw hoga,
+  //toh sayad result.error m aa jata h woh..
+  //....
+  //check if result has error or what..
+
+  //how do frontend user will know if there was any error, woh toh backend k server m dikha rha h
+  //HANDLE it frontend client should have also known what is the error
+  //...
+  //...HANDLE ERROR, SHOW SPECIFIC MESSAGE< PAGE IF ERROR OCCURED
+  const fetchFriends = async () => {
+    //IT is basically, fetching users not fetch friends
+    setLoading(true);
+    try {
+      //IT is basically, fetching users not fetch friends
+      //shows all user
+      const graphqlQuery = {
+        query: `
+        query{
+          showAllDocument{
+          _id
+          name
+          friends
+          }
+        }
+      `,
+      };
+      const response = await fetch("http://localhost:8080/graphql", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(graphqlQuery),
+      }); // Update with your backend URL
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      /*
+      const data = await response.json();
+      if (!data) {
+        const error = new Error("error");
+        throw error;
+      }
+        */
+      // Check if the response is successful
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+
+      const result = await response.json();
+
+      // Check if the GraphQL query returns any data
+      if (result.data && result.data.showAllDocument) {
+        setFriends(result.data.showAllDocument); // Set the friends data
+      } else {
+        console.error("No data returned from GraphQL query");
+      }
+      //now, we can check also, if data has errors??
+      //we have to send it front backend but data.errors[0].status==400//errors arah with property also status
+      //setFriends(data);
+    } catch (error) {
+      console.error("Error fetching friends:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle adding a friend
+  const handleAddFriend = async (currUserId) => {
+    try {
+      const friendId = prompt("Enter friend user ID to delete:");
+      //we get friend Id as as argument to this
+      //string return hoga and string inside string,
+      //double string??
+      const graphqlQuery = {
+        query: `
+        mutation{
+          addFriend(curr_user_id:"${currUserId}",friend_user_id:"${friendId}"){
+          _id
+          name
+          friends
+          }
+        }
+      `,
+      };
+      const response = await fetch(`http://localhost:8080/graphql`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(graphqlQuery),
+      });
+      const result = await response.json();
+      //check if result has error or what..
+
+      //how do frontend user will know if there was any error, woh toh backend k server m dikha rha h
+      //alert("Friend added!");
+      fetchFriends(); // Reload friends list after adding
+    } catch (error) {
+      console.error("Error adding friend:", error);
+    }
+  };
+
+  // Handle deleting a friend
+  const handleDeleteFriend = async (currUserId) => {
+    //we also need, currUserId
+    //we are getting all curr jo user show ho rha uski id
+    //to deleteFriend, add Friend, etc
+    const friendId = prompt("Enter friend user ID to delete:");
+    try {
+      const graphqlQuery = {
+        query: `
+        mutation{
+          deleteFriend(curr_user_id:"${currUserId}",friend_user_id:"${friendId}")
+        }
+      `,
+      };
+      await fetch(`http://localhost:8080/graphql`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(graphqlQuery),
+      });
+      alert("Friend deleted!");
+      fetchFriends(); // Reload friends list after deleting
+    } catch (error) {
+      console.error("Error deleting friend:", error);
+    }
+  };
+
+  const handleShowFriends = async (currUserId) => {
+    try {
+      //const friendId = prompt("Enter friend user ID to delete:");
+      const graphqlQuery = {
+        query: `
+            mutation{
+              showFriends(curr_user_id:"${currUserId}"){
+              _id
+              name
+              friends
+              }
+            }
+          `,
+      };
+      //result.data.mutualFriends ko const ans m put kringe??
+      const response = await fetch(`http://localhost:8080/graphql`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(graphqlQuery),
+      });
+      const result = await response.json();
+      const obj = result.data.showFriends;
+      if (obj) {
+        //object not null so ok
+        currButtonSelected = "showFriendsButton";
+        console.log("arrayof object of friends", obj);
+        //arrayObj = obj;
+        setArrayObj(obj);
+        console.log(arrayObj);
+      } else {
+        console.log("object is null no friends fetched means..");
+      }
+
+      setSelectedUser(currUserId);
+      //currUserId.toString();//krne m different to nhi ho jayegi
+      //yha ObjectId('yha id hoti h').but when passed string,
+      //only inside value passed so error or wot??
+      //friends ki _id,name,friends(_id) array
+      //this will be an array of obj and obj will have all fields _id,name,friends(id's)
+      //result.data will store array of object with _id,name,their friendsid
+      //show that as components or alert?
+      //alert("Mutual friends: " + data.join(", "));
+    } catch (error) {
+      console.error("Error showing  friends:", error);
+    }
+  };
+
+  // Handle showing mutual friends
+  const handleShowMutualFriends = async (currUserId) => {
+    try {
+      const friendId = prompt(
+        "Enter friend user ID to find Mutual Friends Between:"
+      );
+      const graphqlQuery = {
+        query: `
+        mutation{
+          mutualFriends(curr_user_id:"${currUserId}",friend_user_id:"${friendId}"){
+          _id
+          name
+          friends
+          }
+        }
+      `,
+      };
+      //result.data.mutualFriends ko const ans m put kringe??
+      const response = await fetch(`http://localhost:8080/graphql`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(graphqlQuery),
+      });
+      const result = await response.json();
+      const obj = result.data.mutualFriends;
+      console.log("mutual friends array of obj", obj);
+      //this will be an array of obj and obj will have all fields _id,name,friends(id's)
+      //result.data will store array of object with _id,name,their friendsid
+      //show that as components or alert?
+      //alert("Mutual friends: " + data.join(", "));
+      arrayObj = obj;
+      currButtonSelected = "showMutualFriendsButton";
+      setSelectedUser(currUserId);
+    } catch (error) {
+      console.error("Error showing mutual friends:", error);
+    }
+  };
+
+  // Handle showing user details
+  const handleShowDetails = async (currUserId) => {
+    try {
+      const graphqlQuery = {
+        query: `
+        mutation{
+          userDetail(curr_user_id:"${currUserId}"){
+          _id
+          name
+          friends
+          }
+        }
+      `,
+      };
+      //isme toh, ek hi object with fired_id,name,friends milega so, what
+      //how to access result.data._id or result.data.userDetail._id
+      const response = await fetch(`http://localhost:8080/graphql`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(graphqlQuery),
+      });
+      const result = await response.json();
+      const userObj = result.data.userDetail;
+      //userObj will have, userObj._id,.name,.friendList
+      //niche componenet m print
+      //const data=result._id;
+      //alert("User details: " + JSON.stringify(data));
+      currButtonSelected = "userDetailsButton";
+      userDetailObj = userObj;
+      setSelectedUser(userObj._id);
+    } catch (error) {
+      console.error("Error showing user details:", error);
+    }
+  };
+
+  // Handle adding a new user (at the top)
+  const handleAddUser = async () => {
+    const name = prompt("Enter user name:");
+    const friends = prompt("Can enter friends ID's to add seperated by commas");
+
+    if (name) {
+      try {
+        const graphqlQuery = {
+          query: `
+          mutation{
+            addUser(userInput: {name:"${name}",friends:"${friends}"}){
+            _id
+            name
+            friends
+            }
+          }
+        `,
+        };
+        const response = await fetch("http://localhost:8080/graphql", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(graphqlQuery),
+        });
+        const result = await response.json();
+
+        //console.log("result.data._id", result.data._id);
+        //above gives undefined, we have to access like this only..
+        console.log(
+          "result.data.addUser._id returning userSchema",
+          result.data.addUser._id
+        );
+        alert("User added!");
+        fetchFriends(); // Reload friends list after adding
+      } catch (error) {
+        console.error("Error adding user:", error);
+      }
+    }
+  };
+
+  // Handle deleting a user (at the top)
+  const handleDeleteUser = async () => {
+    const userId = prompt("Enter user ID to delete:");
+    if (userId) {
+      try {
+        const graphqlQuery = {
+          query: `
+          mutation{
+            deleteUser(curr_user_id:"${userId}")
+          }
+        `,
+        };
+        const response = await fetch("http://localhost:8080/graphql", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(graphqlQuery),
+        });
+        const result = await response.json();
+        //return string true or false
+        if (!result.data) {
+          const err = new Error(
+            "error will fetchinge dtaa, data empty types kuch Delete User"
+          );
+          throw err;
+        }
+        console.log(result.data.deleteUser);
+        //we got null because, error retuned??
+        if (result.data.deleteUser === "true") {
+          alert("User deleted!");
+          console.log("User delete successfuly");
+        } else {
+          if (result.data.deleteUser === "true") {
+            console.log("false returned while deleing");
+          }
+          console.log("user not deleted wrong id");
+        }
+        // alert("User deleted!");
+        fetchFriends(); // Reload friends list after deleting
+      } catch (error) {
+        console.error("Error deleting user:", error);
+      }
+    }
+  };
+
+  // Fetch the list of friends when the component mounts
+  useEffect(() => {
+    fetchFriends();
+  }, []);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  return (
+    <div>
+      <div className="header">
+        <button onClick={handleAddUser}>Add User</button>
+        <button onClick={handleDeleteUser}>Delete User</button>
+      </div>
+
+      <h1>Users List</h1>
+      <div className="friends-list">
+        {friends.length === 0 ? (
+          <p>No Users available.</p>
+        ) : (
+          friends.map((friend) => (
+            <React.Fragment key={friend._id}>
+              <FriendCard
+                key={friend._id}
+                friend={friend}
+                onShowFriends={handleShowFriends}
+                onAddFriend={handleAddFriend}
+                onDeleteFriend={handleDeleteFriend}
+                onShowMutualFriends={handleShowMutualFriends}
+                onShowDetails={handleShowDetails}
+              />
+              <div id="selecting">
+                {userDetailObj
+                  ? '{console.log("user obj not defined)} '
+                  : selectedUser &&
+                    selectedUser.toString() === friend._id.toString() &&
+                    currButtonSelected === "userDetailsButton" && (
+                      <UserDetails userDetailObj={userDetailObj} />
+                    )}
+                {selectedUser &&
+                  selectedUser.toString() === friend._id.toString() &&
+                  currButtonSelected === "userDetailsButton" && (
+                    <UserDetails userDetailObj={userDetailObj} />
+                  )}
+                {selectedUser === friend._id &&
+                  console.log("equal selectedUser and friend id")}
+                {currButtonSelected &&
+                  console.log("currbutton selected:", currButtonSelected)}
+                {arrayObj
+                  ? '{console.log("obj of friends not defined)} '
+                  : selectedUser &&
+                    selectedUser === friend._id &&
+                    (currButtonSelected === "showMutualFriendsButton" ||
+                      currButtonSelected === "showFriendsButton") &&
+                    arrayObj && <ShowFriends userDetailObj={arrayObj} />}
+
+                {selectedUser &&
+                  console.log("SelectedUser value id is:", selectedUser)}
+              </div>
+            </React.Fragment>
+          ))
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default App;
+/*
+let userDetailObj;
+let arrayObj;
+//currButtonSelected="userDetailsButton";
+setSelectedUser(userObj._id);
+currButtonSelected="showMutualFriendsButton";
+      setSelectedUser(currUserId);
+
+currButtonSelected = "showFriendsButton";
+      setSelectedUser(currUserId);
+*/

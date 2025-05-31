@@ -1,0 +1,116 @@
+* {
+  border: 0px;
+  margin: 0px;
+  padding: 0px;
+  border-radius: 0px;
+  box-sizing: border-box;
+}
+:root {
+  --svg-color: black;
+}
+.Login {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  position: absolute;
+  z-index: 1;
+}
+.form {
+  border: 5px solid #48d9f3ab;
+  padding: 30px;
+}
+div {
+  padding: 5px;
+  margin: 10px;
+}
+label {
+  font-size: 16px;
+  color: white;
+}
+input {
+  background-color: black;
+  border-radius: 12px;
+  max-width: 300px;
+  /*width: 100%;*/
+  /*box-shadow: 0 2px 4px rgba(0, 0, 0, 0);*/
+  padding: 10px;
+  font-size: 16px;
+}
+input::placeholder {
+  color: rgba(255, 255, 255, 0.421);
+}
+.createAccount {
+  margin-left: auto;
+}
+p {
+  margin-left: auto;
+  text-align: right;
+  /*this is for text align right in doens't have account create account*/
+}
+
+/*
+.svgArrow:hover {
+  fill: --svg-color;
+}
+  we can't hover svg, we can hover button and want to chnage svg
+
+*/
+
+svg {
+  margin: 10px;
+}
+/*
+Now, descendent or child elments color will be black
+when we hover on login button
+*/
+.loginButton {
+  text-align: center;
+  font-size: 24px;
+  width: 100%;
+  padding: 5px;
+  margin: 10px;
+  color: white;
+  background-color: black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /*transition: all 2s;*/
+}
+.loginButton:hover {
+  background-color: white;
+  color: black;
+}
+/*
+.svgArrow {
+  transition: trasnform 2s, fill 2s;
+}*/
+.loginButton:hover .svgArrow {
+  opacity: 1;
+  transform: translateX(-25px);
+  fill: black;
+}
+.svgArrow {
+  width: 24px;
+  height: 16px;
+  opacity: 0;
+  position: absolute;
+  transform: translateX(-50px);
+  transition: transform 2s, fill 2s;
+}
+.svgPara {
+  transition: transform 2s, color 2s;
+}
+.loginButton:hover .svgPara {
+  transform: translateX(20px);
+}
+/*
+.arrowPath {
+  fill: white;
+  transition: fill 2s;
+}
+  */
+.loginButton:hover .arrowPath {
+  fill: black;
+}

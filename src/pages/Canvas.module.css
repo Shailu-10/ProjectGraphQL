@@ -1,0 +1,25 @@
+* {
+  border: 0px;
+  margin: 0px;
+  padding: 0px;
+  border-radius: 0px;
+  box-sizing: border-box;
+}
+body {
+  background-color: "black";
+}
+.canvass {
+  position: absolute;
+  z-index: 0;
+  /* background-color: black;*/
+}
+.Div {
+  position: absolute;
+}
+/*
+.login {
+  position: absolute;
+  z-index: 1;
+  color: red;
+}
+  */
