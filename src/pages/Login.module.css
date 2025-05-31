@@ -75,6 +75,10 @@ input {
   border-radius: 0px;
   cursor: pointer;
 }
+.buttonWrapper:active {
+  color: black;
+  color: white;
+}
 .svgArrow {
   /*display: inline-block;*/
   fill: white;
